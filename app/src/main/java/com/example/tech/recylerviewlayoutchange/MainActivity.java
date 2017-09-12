@@ -23,6 +23,7 @@ import android.widget.Button;
 
 import com.example.tech.recylerviewlayoutchange.adapter.ItemAdapter;
 import com.example.tech.recylerviewlayoutchange.model.ItemModel;
+import com.example.tech.recylerviewlayoutchange.view.ItemDecorator;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -37,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
     static int MAX_NO_OF_PHOTOS = 8;
     private List<ItemModel> mPhotoUris;
     private static final int REQUEST_WRITE_PERMISSION = 786;
-
+    ItemDecorator itemDecorator;
     private  ItemAdapter mAdapter;
     public interface adapterinteraction{
         public void changeColumns(boolean shouldChange );
@@ -70,7 +71,8 @@ public class MainActivity extends AppCompatActivity {
         RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(this , no_of_columns);
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
-
+        itemDecorator = new ItemDecorator(20);
+        recyclerView.addItemDecoration(itemDecorator);
 
         recyclerView.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -91,7 +93,11 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         mAdapter.setLayoutChanges(check);
+        mAdapter.setLocalDecoratorSpace(itemDecorator.getmSpace());
+
         recyclerView.setAdapter(mAdapter);
+
+
 //        requestPermission();
 
 
@@ -130,18 +136,25 @@ public class MainActivity extends AppCompatActivity {
             public boolean onScale(ScaleGestureDetector detector) {
                 Log.i( TAG, "zoom ongoing, scale: " + detector.getScaleFactor());
 
-                if( detector.getScaleFactor() < 1 && no_of_columns != MAX_NO_OFCOL)
-                    mAdapter.incBasePadding((int) (detector.getScaleFactor()* 3));
+                int val;
+                if( detector.getScaleFactor() < 1 && no_of_columns != MAX_NO_OFCOL){
+//                    mAdapter.incBasePadding((int) (detector.getScaleFactor()* 3));
 
-                else if(detector.getScaleFactor() >  1 && no_of_columns != 1)
-                    mAdapter.decBasePadding((int) detector.getScaleFactor() );
+                    itemDecorator.setmSpace((int)  Math.ceil( detector.getScaleFactor() ));
+
+                }
+                else if(detector.getScaleFactor() >  1 && no_of_columns != 1) {
+                    val =- (int) detector.getScaleFactor();
+                    itemDecorator.setmSpace(val);
+                }
                 else if (no_of_columns == MAX_NO_OFCOL)
-                    mAdapter.incBasePadding(0);
+                    itemDecorator.setmSpace( 0);
                 else if (no_of_columns == 1)
-                    mAdapter.incBasePadding(0);
+                    itemDecorator.setmSpace( 0);
+                mAdapter.setLocalDecoratorSpace(itemDecorator.getmSpace());
                 mAdapter.notifyDataSetChanged();
 
-                Log.i(TAG, "onScale: no_of_columns "+no_of_columns + "   "+detector.getScaleFactor());
+                Log.i(TAG, "onScale: no_of_columns "+no_of_columns + "   "+detector.getScaleFactor() + "  "+(int) - Math.ceil( detector.getScaleFactor() ));
 
                 return false;
             }

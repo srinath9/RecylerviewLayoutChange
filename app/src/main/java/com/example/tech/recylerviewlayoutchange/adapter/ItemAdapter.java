@@ -2,6 +2,9 @@ package com.example.tech.recylerviewlayoutchange.adapter;
 
 import android.content.Context;
 
+import android.graphics.Color;
+import android.graphics.Rect;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,6 +22,7 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
+import static android.R.attr.translationZ;
 
 
 public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.MyViewHolder> {
@@ -31,7 +35,12 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.MyViewHolder> 
     private final  int COMMON_PADDING_MAX = 25;
 
     MainActivity.adapterinteraction check;
+
+    private int localDecoratorSpace;
+
     ScaleGestureDetector mScaleDetector;
+
+    String TAG = getClass().getName();
 
     public void setLayoutChanges(MainActivity.adapterinteraction check) {
         this.check = check;
@@ -66,9 +75,14 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.MyViewHolder> 
         }
     }
 
+
+    public void setLocalDecoratorSpace(int localDecoratorSpace) {
+        this.localDecoratorSpace = localDecoratorSpace;
+    }
+
     public void incBasePadding(int basePaddingnew) {
         this.basePadding = this.basePadding + basePaddingnew;
-        Log.i("base ", "incBasePadding: "+basePadding);
+//        Log.i("base ", "incBasePadding: "+basePadding);
 
         if(basePadding > 40 ){
 //            check.changeColumns(true);
@@ -94,6 +108,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.MyViewHolder> 
         View itemView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.each_item_layout, parent, false);
 
+
         return new MyViewHolder(itemView);
     }
 
@@ -104,13 +119,35 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.MyViewHolder> 
         if( ItemModelsList.get(position).isSelected()) {
              finalPadding = -10;
 
+            if( localDecoratorSpace < 5){
+                holder.ll_each.setBackgroundColor(Color.GREEN);
+                holder.ll_each.bringToFront();
+                ViewCompat.setTranslationZ( holder.ll_each , 10);
+            }
+            else {
+                holder.ll_each.setBackgroundColor(Color.GRAY);
+                ViewCompat.setTranslationZ( holder.ll_each , 0);
+            }
         }else{
-            finalPadding = basePadding;
+//            finalPadding = basePadding;
+            holder.ll_each.setBackgroundColor(Color.GRAY);
+            finalPadding = 0;
+            ViewCompat.setTranslationZ( holder.ll_each , 0);
         }
+
 
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         lp.setMargins(finalPadding, finalPadding, finalPadding, finalPadding);
         holder.ll_each.setLayoutParams(lp);
+
+        View itemView = holder.ll_each;
+        int test1[] = new int[2];
+        Rect val = new Rect();
+        itemView.getFocusedRect(val);
+        itemView.getLocationOnScreen(test1);
+//        Log.i(TAG, "onCreateViewHolder: "+ test1[0]+ " "+ test1[1] + " "+val);
+        Log.i(TAG, "onCreateViewHolder: "+ localDecoratorSpace);
+
 
         holder.ll_each.setOnClickListener(new View.OnClickListener() {
             @Override
